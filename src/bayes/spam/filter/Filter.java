@@ -53,19 +53,22 @@ public class Filter {
 
     }
 
+    //Versucht das Resultat ausagekräftig zu machen. 
     public void fninischLearn() {
         List<String> toRemove = new ArrayList();
         for (Word value : dictionary.values()) {
             //Wird benötigt um die nicht ausagekräftigen Wörter zu eliminieren
-            if ((value.ham + value.spam) > 20) {
+            double aussagekraeftigAb = 0.3;// Ausage in %
+            if (value.ham < hamCounter * aussagekraeftigAb && value.spam < spamCounter * aussagekraeftigAb) {
                 toRemove.add(value.word);
-            }
-            if (value.ham < 1) {
-                value.ham++;
-            }
+            } else {
+                if (value.ham < hamCounter * aussagekraeftigAb) {
+                    value.ham += hamCounter * aussagekraeftigAb;
+                }
 
-            if (value.spam < 1) {
-                value.spam++;
+                if (value.spam < spamCounter * aussagekraeftigAb) {
+                    value.spam += spamCounter * aussagekraeftigAb;
+                }
             }
         }
 
@@ -75,7 +78,7 @@ public class Filter {
         }
     }
 
-    public boolean decide(String mail) {
+    public boolean decideIsHam(String mail) {
         double spamValue = 0;
         double hamValue = 0;
         for (String oWord : mail.split("\\W+")) {
@@ -83,18 +86,25 @@ public class Filter {
             if (dictionary.containsKey(kWord)) {
                 Word word = dictionary.get(kWord);
                 if (spamValue == 0) {
-                    spamValue = word.spam / this.spamCounter;
+                    spamValue = (double) word.spam / (double) this.spamCounter;
+                } else {
+                    spamValue = ((double) word.spam / (double) this.spamCounter) * spamValue;
                 }
                 if (hamValue == 0) {
-                    hamValue = word.ham / this.hamCounter;
+                    hamValue = (double) word.ham / (double) this.hamCounter;
+                } else {
+                    hamValue = ((double) word.ham / (double) this.hamCounter) * hamValue;
                 }
                 //Berechnen der ham und Spam values Seperated.
-                spamValue = (word.spam / this.spamCounter) * spamValue;
-                hamValue = (word.ham / this.hamCounter) * hamValue;
 
             }
 
         }
-        return true;
+        double spam = (double) spamValue / (double) ((double) spamValue + (double) hamValue);
+        if (spam >= 1) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

@@ -41,13 +41,48 @@ public class BayesSpamFilter {
 
         }
         {
-            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern");
+            long ham=0;
+            long spam=0;
+            //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung"
+            //ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern");
+            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-kallibrierung");
             for (String mail : mReader.ReadMails()) {
-                filter.decide(mail);
+                if (mail!=null) {
+                 if(filter.decideIsHam(mail))
+                 {
+                     ham++;
+                 }
+                 else{
+                     spam++;
+                 }
+                }
+                
             }
+            System.out.println("bayes.spam.filter.BayesSpamFilter.main()");
             
         }
-
+        
+        {
+            long ham=0;
+            long spam=0;
+            //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung"
+            // mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-anlern");
+            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung");
+            for (String mail : mReader.ReadMails()) {
+                if (mail!=null) {
+                 if(filter.decideIsHam(mail))
+                 {
+                     ham++;
+                 }
+                 else{
+                     spam++;
+                 }
+                }
+                
+            }
+            System.out.println("bayes.spam.filter.BayesSpamFilter.main()");
+            
+        }
     }
 
 }
