@@ -6,6 +6,7 @@
 package bayes.spam.filter;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  *
@@ -36,47 +37,32 @@ public class BayesSpamFilter {
             filter.fninishLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden.
 
         }
-        {
-            long ham=0;
-            long spam=0;
-            //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung"
-            //ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern");
-            ReadDocuments mReader = new ReadDocuments("\\spam-kallibrierung");
-            for (String mail : mReader.ReadMails()) {
-                if (mail!=null) {
-                 if(filter.decideIsHam(mail))
-                 {
-                     ham++;
-                 }
-                 else{
-                     spam++;
-                 }
-                }
-                
-            }
-            System.out.println("bayes.spam.filter.BayesSpamFilter.main()");
-            
-        }
-        {
-            long ham=0;
-            long spam=0;
+        {   //tryouts
+            ReadDocuments hReader = new ReadDocuments("\\ham-kallibrierung");
+            String[] ham_mails = hReader.ReadMails();
+            ReadDocuments sReader = new ReadDocuments("\\spam-kallibrierung");
+            String[] spam_mails = sReader.ReadMails();
 
-            ReadDocuments mReader = new ReadDocuments("\\ham-kallibrierung");
-            for (String mail : mReader.ReadMails()) {
-                if (mail!=null) {
-                 if(filter.decideIsHam(mail))
-                 {
-                     ham++;
-                 }
-                 else{
-                     spam++;
-                 }
+            double[] alpha_schwell_maxdetrate = new double[]{0,0,0};
+
+            for( double a = 0.05; a < 1; a=a+0.05 ){
+                filter.alpha =a;
+                for (double s = 0.1; s<1; s = s+0.1){
+                    filter.schwellenwert=s;
+                    double curr = filter.evaluate(ham_mails, true) + filter.evaluate(spam_mails, false);
+                    if(curr>alpha_schwell_maxdetrate[2]){
+                        alpha_schwell_maxdetrate[1] = s;
+                        alpha_schwell_maxdetrate[0] = 1;
+                    }
+                    System.out.println(s);
                 }
-                
+                System.out.println(a);
             }
-            System.out.println("bayes.spam.filter.BayesSpamFilter.main()");
-            
+            System.out.println("A: " + alpha_schwell_maxdetrate[0] + " Schwell: "+ alpha_schwell_maxdetrate[1] +" Max: "+ alpha_schwell_maxdetrate[2]);
+
+
         }
+
     }
 
 }

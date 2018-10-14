@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 public class Filter {
     /**
-     * Stores all the keywords, and the word itself to calculate later on, if a word has a high spam or ham probability
+     * Stores all the significant keywords, and the word itself to calculate later on, if a word has a high spam or ham probability
      */
     HashMap<String, Word> dictionary = new HashMap<String, Word>();
     /**
@@ -25,7 +25,14 @@ public class Filter {
      *
      */
     long spamCounter = 0;
-
+    /**
+     * min value for a mail to be classified spam
+     */
+    public double schwellenwert =0.85;
+    /**
+     * min weight a word has to have, before it is recognized by the filter as significant
+     */
+    double alpha = 0.4;
     /**
      * fills up the dictionary with all the significant words, it learned from the spam/ham mails it had to
      * analise
@@ -78,16 +85,15 @@ public class Filter {
         System.out.println("Dictionary size: " + dictionary.size());
         for (Word value : dictionary.values()) {
             //Wird benötigt um die nicht ausagekräftigen Wörter zu eliminieren
-            double aussagekraeftigAb = 0.3;// Ausage in %
-            if (value.ham < hamCounter * aussagekraeftigAb && value.spam < spamCounter * aussagekraeftigAb) {
+            if (value.ham < hamCounter * alpha && value.spam < spamCounter * alpha) {
                 toRemove.add(value.word);
             } else {
-                if (value.ham < hamCounter * aussagekraeftigAb) {
-                    value.ham += hamCounter * aussagekraeftigAb;
+                if (value.ham < hamCounter * alpha) {
+                    value.ham += hamCounter * alpha;
                 }
 
-                if (value.spam < spamCounter * aussagekraeftigAb) {
-                    value.spam += spamCounter * aussagekraeftigAb;
+                if (value.spam < spamCounter * alpha) {
+                    value.spam += spamCounter * alpha;
                 }
             }
         }
@@ -127,10 +133,43 @@ public class Filter {
 
         }
         double spam = (double) spamValue / (double) ((double) spamValue + (double) hamValue);
-        if (spam >= 1) {
+        if (spam >= schwellenwert) {
             return false;
         } else {
             return true;
         }
+    }
+
+    /**
+     * evaluates a mailcollection
+     * @param mailcollection
+     * @param is_ham boolean value if it should evaluate on ham, or on spam
+     * @return the detectionrate
+     */
+    public double evaluate(String[] mailcollection, boolean is_ham){
+        long ham=0;
+        long spam=0;
+
+        for (String mail : mailcollection) {
+            if (mail!=null) {
+                if(decideIsHam(mail))
+                {
+                    ham++;
+                }
+                else{
+                    spam++;
+                }
+            }
+        }
+        double detectionrate =0;
+        if(is_ham){
+            detectionrate = ham / (double) mailcollection.length;
+        }
+        else{
+            detectionrate = spam / (double) mailcollection.length;
+        }
+        //System.out.println( "AUSWERTUNG " + (is_ham? "HAM:":"SPAM:") +" Schwellenwert: "+ schwellenwert +
+        //        ", Alpha: "+alpha + ", Erkennungsrate: " + detectionrate );
+        return detectionrate;
     }
 }
