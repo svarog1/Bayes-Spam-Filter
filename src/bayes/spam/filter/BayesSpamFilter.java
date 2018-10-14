@@ -5,9 +5,7 @@
  */
 package bayes.spam.filter;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 /**
  *
@@ -19,14 +17,12 @@ public class BayesSpamFilter {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-        // TODO code application logic here
+
         Filter filter = new Filter();
         {
             System.out.println("Imput Path Ham");
-            // "E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-anlern"
-//            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-//            String line = buffer.readLine();
-            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-anlern");
+            ReadDocuments mReader = new ReadDocuments("\\ham-anlern");
+
             filter.learn(mReader.ReadMails(), true);
         }
         {
@@ -34,10 +30,10 @@ public class BayesSpamFilter {
             //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern"
 //            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
 //            String line = buffer.readLine();
-            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern");
+            ReadDocuments mReader = new ReadDocuments("\\spam-anlern");
             filter.learn(mReader.ReadMails(), false);
-            filter.fninischLearn();
-            filter.fninischLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden. 
+            filter.fninishLearn();
+            filter.fninishLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden.
 
         }
         {
@@ -45,7 +41,7 @@ public class BayesSpamFilter {
             long spam=0;
             //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung"
             //ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern");
-            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-kallibrierung");
+            ReadDocuments mReader = new ReadDocuments("\\spam-kallibrierung");
             for (String mail : mReader.ReadMails()) {
                 if (mail!=null) {
                  if(filter.decideIsHam(mail))
@@ -61,13 +57,11 @@ public class BayesSpamFilter {
             System.out.println("bayes.spam.filter.BayesSpamFilter.main()");
             
         }
-        
         {
             long ham=0;
             long spam=0;
-            //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung"
-            // mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-anlern");
-            ReadDocuments mReader = new ReadDocuments("E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\ham-kallibrierung");
+
+            ReadDocuments mReader = new ReadDocuments("\\ham-kallibrierung");
             for (String mail : mReader.ReadMails()) {
                 if (mail!=null) {
                  if(filter.decideIsHam(mail))
