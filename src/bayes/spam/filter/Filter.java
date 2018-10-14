@@ -28,11 +28,11 @@ public class Filter {
     /**
      * min value for a mail to be classified spam
      */
-    public double schwellenwert =0.85;
+    public double schwellenwert =0.95;
     /**
      * min weight a word has to have, before it is recognized by the filter as significant
      */
-    double alpha = 0.4;
+    double alpha = 0.32;
     /**
      * fills up the dictionary with all the significant words, it learned from the spam/ham mails it had to
      * analise
@@ -168,8 +168,8 @@ public class Filter {
         else{
             detectionrate = spam / (double) mailcollection.length;
         }
-        //System.out.println( "AUSWERTUNG " + (is_ham? "HAM:":"SPAM:") +" Schwellenwert: "+ schwellenwert +
-        //        ", Alpha: "+alpha + ", Erkennungsrate: " + detectionrate );
+        System.out.println( "AUSWERTUNG " + (is_ham? "HAM:":"SPAM:") +" Schwellenwert: "+ schwellenwert +
+                ", Alpha: "+alpha + ", Erkennungsrate: " + detectionrate );
         return detectionrate;
     }
 }
