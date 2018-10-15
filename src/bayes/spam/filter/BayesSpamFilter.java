@@ -22,20 +22,21 @@ public class BayesSpamFilter {
             Filter filter = new Filter();
 
             {
+                //learn HAM
                 System.out.println("Imput Path Ham");
-                ReadDocuments mReader = new ReadDocuments("\\ham-anlern");
+                ReadDocuments hamReader = new ReadDocuments("\\ham-anlern");
+                filter.learn(hamReader.ReadMails(), true);
 
-                filter.learn(mReader.ReadMails(), true);
-            }
-            {
+                //learn SPAM
                 System.out.println("Imput Path Spam");
-                //"E:\\Santino\\OneDrive\\FH\\Dist\\Uebungen\\Bayes-SpamFilter\\spam-anlern"
-//            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-//            String line = buffer.readLine();
-                ReadDocuments mReader = new ReadDocuments("\\spam-anlern");
-                filter.learn(mReader.ReadMails(), false);
+                ReadDocuments spamReader = new ReadDocuments("\\spam-anlern");
+                filter.learn(spamReader.ReadMails(), false);
+
+                //filter.tweakDictionary();
                 filter.fninishLearn();
-                filter.fninishLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden.
+                //filter.fninishLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden.
+
+
 
                 ReadDocuments hReader = new ReadDocuments("\\ham-test");
                 String[] ham_mails = hReader.ReadMails();
@@ -43,6 +44,7 @@ public class BayesSpamFilter {
                 String[] spam_mails = sReader.ReadMails();
                 filter.evaluate(ham_mails, true);
                 filter.evaluate(spam_mails, false);
+
             }
 
 /**
@@ -54,10 +56,10 @@ public class BayesSpamFilter {
 
             double[] alpha_schwell_maxdetrate = new double[]{0,0,0};
 
-            for( double a = 0.00; a <= 1; a=a+0.02 )
+            for( double a = 0.2; a >0 ; a=a-0.01 )
             {
-                Filter filter = new Filter();
-                filter.alpha =a;
+                filter = new Filter();
+                filter.alpha = a;
 
                 System.out.println("Imput Path Ham");
                 ReadDocuments haReader = new ReadDocuments("\\ham-anlern");
@@ -67,10 +69,9 @@ public class BayesSpamFilter {
                 ReadDocuments mReader = new ReadDocuments("\\spam-anlern");
                 filter.learn(mReader.ReadMails(), false);
 
-                filter.fninishLearn();
-                filter.fninishLearn(); //Doppelte ausführung zusätzlich Elemente können entfernt werden.
+                filter.tweakDictionary();
 
-                for (double s = 0.5; s<=1; s = s+0.05){
+                for (double s = 0.9; s<=1; s = s+0.01){
                     filter.schwellenwert=s;
                     double curr = filter.evaluate(ham_mails, true) + filter.evaluate(spam_mails, false);
                     if(curr>alpha_schwell_maxdetrate[2]){

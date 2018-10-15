@@ -3,8 +3,6 @@ package bayes.spam.filter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This class is in charge of deciding, if a mail is spam or ham. in order to do so it has a learning method which
@@ -28,11 +26,15 @@ public class Filter {
     /**
      * min value for a mail to be classified spam
      */
-    public double schwellenwert =0.95;
+    public double schwellenwert =0.99;
+    /**
+     * offset, that is added to prevent absolute probabilities
+     */
+    public int alpha =1;
     /**
      * min weight a word has to have, before it is recognized by the filter as significant
      */
-    double alpha = 0.32;
+    double aussagekräftigAb = 0.1;
     /**
      * fills up the dictionary with all the significant words, it learned from the spam/ham mails it had to
      * analise
@@ -77,6 +79,26 @@ public class Filter {
 
     }
 
+    public void tweakDictionary(){
+        System.out.println("Dictionary size: " + dictionary.size());
+        System.out.println("tweaking dictionary");
+
+        int count = 0;
+
+        for ( Word word : dictionary.values()){
+            if(word.ham == 0){
+                word.ham += alpha;
+                count++;
+            }
+            else if(word.spam == 0){
+                word.spam += alpha;
+                count++;
+            }
+        }
+        System.out.println(count + " words have been tweaked");
+    }
+
+
     /**
      * tries to make the dictionary expressive, by removing all the words, under a certain threshold
      */
@@ -85,24 +107,48 @@ public class Filter {
         System.out.println("Dictionary size: " + dictionary.size());
         for (Word value : dictionary.values()) {
             //Wird benötigt um die nicht ausagekräftigen Wörter zu eliminieren
-            if (value.ham < hamCounter * alpha && value.spam < spamCounter * alpha) {
+            /**if (value.ham < hamCounter * aussagekräftigAb && value.spam < spamCounter * aussagekräftigAb) {
                 toRemove.add(value.word);
             } else {
-                if (value.ham < hamCounter * alpha) {
-                    value.ham += hamCounter * alpha;
+                if (value.ham < hamCounter * aussagekräftigAb) {
+                    value.ham += hamCounter * aussagekräftigAb;
                 }
 
-                if (value.spam < spamCounter * alpha) {
-                    value.spam += spamCounter * alpha;
+                if (value.spam < spamCounter * aussagekräftigAb) {
+                    value.spam += spamCounter * aussagekräftigAb;
                 }
             }
+             */
+
+            if(value.ham>=hamCounter-aussagekräftigAb*hamCounter){
+                value.ham=(int)(hamCounter-(double)aussagekräftigAb*hamCounter);
+            }
+            else if(value.ham<=aussagekräftigAb*hamCounter){
+                value.ham= (int) (aussagekräftigAb*hamCounter);
+            }
+            if(value.spam>=spamCounter-aussagekräftigAb*spamCounter){
+                value.spam=(int) (spamCounter-aussagekräftigAb*spamCounter);
+            }
+            else if(value.spam<=aussagekräftigAb*spamCounter){
+                value.spam =(int) (aussagekräftigAb*spamCounter);
+            }
+            double spamValue;
+            double hamValue;
+
+            spamValue = ((double) value.spam / (double) this.spamCounter);
+            hamValue = ((double) value.ham / (double) this.hamCounter);
+
+            value.wordspamvalue = spamValue/(spamValue+hamValue);
         }
-        System.out.println("Removing " + toRemove.size() + " word from the dictionary for not being meaningful");
+
+        System.out.println("Removing " + toRemove.size() + " words from the dictionary for not being meaningful");
         //Entfenrt die nicht aussagekräftigen Elemente
         for (String element : toRemove) {
             dictionary.remove(element);
         }
     }
+
+
 
     /**
      * Takes a mail, separates it into words, analyses them and calculates the probability that the mail is spam or ham.
@@ -110,34 +156,39 @@ public class Filter {
      * @return true if the mail is ham
      */
     public boolean decideIsHam(String mail) {
-        double spamValue = 0;
-        double hamValue = 0;
+        double spamProduct=1;
+        double oppositeSpamProduct=1;
         for (String oWord : mail.split("\\W+")) {
             String kWord = oWord.toLowerCase();
+
             //calculates the spam/ham probability of the mail, according to the formula by bayes
             if (dictionary.containsKey(kWord)) {
                 Word word = dictionary.get(kWord);
-                if (spamValue == 0) {
-                    spamValue = (double) word.spam / (double) this.spamCounter;
-                } else {
-                    spamValue = ((double) word.spam / (double) this.spamCounter) * spamValue;
-                }
-                if (hamValue == 0) {
-                    hamValue = (double) word.ham / (double) this.hamCounter;
-                } else {
-                    hamValue = ((double) word.ham / (double) this.hamCounter) * hamValue;
-                }
-                //Berechnen der ham und Spam values Seperated.
 
+                    spamProduct =  spamProduct*word.wordspamvalue;
+                    oppositeSpamProduct = oppositeSpamProduct*(1-word.wordspamvalue);
             }
-
+                //Berechnen der ham und Spam values Seperated.
         }
-        double spam = (double) spamValue / (double) ((double) spamValue + (double) hamValue);
-        if (spam >= schwellenwert) {
+
+        if (oppositeSpamProduct/spamProduct >= schwellenwert) {
             return false;
         } else {
             return true;
         }
+    }
+
+    public boolean altDecideIsSpam(String mail) {
+        List<Double> spamProbsOfAWords  = new ArrayList<>();
+        int count =0;
+        for (String oWord : mail.split("\\W")){
+            String kWord = oWord.toLowerCase();
+            if( dictionary.containsKey(kWord)){
+
+            }
+
+        }
+        return false;
     }
 
     /**
@@ -169,7 +220,7 @@ public class Filter {
             detectionrate = spam / (double) mailcollection.length;
         }
         System.out.println( "AUSWERTUNG " + (is_ham? "HAM:":"SPAM:") +" Schwellenwert: "+ schwellenwert +
-                ", Alpha: "+alpha + ", Erkennungsrate: " + detectionrate );
+                ", Alpha: "+ aussagekräftigAb + ", Erkennungsrate: " + detectionrate );
         return detectionrate;
     }
 }

@@ -19,6 +19,10 @@ public class Word {
      */
     public int spam;
     /**
+     *
+     */
+    public  double wordspamvalue;
+    /**
      * final, the actual word as a Strin
      */
     public final String word;
