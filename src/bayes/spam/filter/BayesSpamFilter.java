@@ -55,12 +55,12 @@ public class BayesSpamFilter {
             ReadDocuments sReader = new ReadDocuments("\\spam-kallibrierung");
             String[] spam_mails = sReader.ReadMails();
 
-            double[] alpha_schwell_maxdetrate = new double[]{0,0,0};
+            double[] alpha_schwell_maxdetrate = new double[]{0,0,2};
 
-            for( double a = 0.02; a <0.4 ; a=a+0.02 )
+            for( double a = 0.05; a >0 ; a=a-0.0001 )
             {
                 filter = new Filter();
-                filter.aussagekräftigAb = a;
+                filter.alpha = a;
 
                 System.out.println("Imput Path Ham");
                 ReadDocuments haReader = new ReadDocuments("\\ham-anlern");
@@ -72,10 +72,10 @@ public class BayesSpamFilter {
 
                 filter.fninishLearn();
 
-                for (double s = 0.9; s<=1; s = s+0.01){
+                for (double s = 0.99; s<1; s = s+0.1){
                     filter.schwellenwert=s;
-                    double curr = filter.evaluate(ham_mails, true) + filter.evaluate(spam_mails, false);
-                    if(curr>alpha_schwell_maxdetrate[2]){
+                    double curr = filter.evaluate(ham_mails, true) + (1-filter.evaluate(spam_mails, false));
+                    if(curr<alpha_schwell_maxdetrate[2]){
                         alpha_schwell_maxdetrate[0] = a;
                         alpha_schwell_maxdetrate[1] = s;
                         alpha_schwell_maxdetrate[2] = curr;

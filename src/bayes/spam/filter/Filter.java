@@ -29,11 +29,11 @@ public class Filter {
     /**
      * min value for a mail to be classified spam
      */
-    public double schwellenwert =0.99;
+    public double schwellenwert =0.99; //0.99
     /**
      * offset, that is added to prevent absolute probabilities
      */
-    public int alpha =1;
+    public double alpha =0.0013; //0.01
     /**
      * min weight a word has to have, before it is recognized by the filter as significant
      */
@@ -90,31 +90,14 @@ public class Filter {
         List<String> toRemove = new ArrayList();
         System.out.println("Dictionary size: " + dictionary.size());
         for (Word value : dictionary.values()) {
-            //Wird benötigt um die nicht ausagekräftigen Wörter zu eliminieren
-            /**if (value.ham < hamCounter * aussagekräftigAb && value.spam < spamCounter * aussagekräftigAb) {
-             toRemove.add(value.word);
-             } else {
-             if (value.ham < hamCounter * aussagekräftigAb) {
-             value.ham += hamCounter * aussagekräftigAb;
-             }
 
-             if (value.spam < spamCounter * aussagekräftigAb) {
-             value.spam += spamCounter * aussagekräftigAb;
-             }
-             }
-             */
-            if (value.ham + value.spam == 1) {
-                toRemove.add(value.word);
-            } else {
-                if (value.ham >= hamCounter - aussagekräftigAb * hamCounter) {
-                    value.ham = (int) (hamCounter - (double) aussagekräftigAb * hamCounter);
-                } else if (value.ham <= aussagekräftigAb * hamCounter) {
-                    value.ham = (int) (aussagekräftigAb * hamCounter);
+                if(value.ham ==0){
+                    value.wordspamvalue = 1- alpha;
+                    continue;
                 }
-                if (value.spam >= spamCounter - aussagekräftigAb * spamCounter) {
-                    value.spam = (int) (spamCounter - aussagekräftigAb * spamCounter);
-                } else if (value.spam <= aussagekräftigAb * spamCounter) {
-                    value.spam = (int) (aussagekräftigAb * spamCounter);
+                else if (value.spam == 0){
+                    value.wordspamvalue = alpha;
+                    continue;
                 }
                 double spamValue;
                 double hamValue;
@@ -123,12 +106,6 @@ public class Filter {
                 hamValue = ((double) value.ham / (double) this.hamCounter);
 
                 value.wordspamvalue = spamValue / (spamValue + hamValue);
-            }
-        }
-        System.out.println("Removing " + toRemove.size() + " words from dictionary for having only one appearance");
-        //Entfenrt die nicht aussagekräftigen Elemente
-        for (String element : toRemove) {
-            dictionary.remove(element);
         }
     }
 
@@ -203,7 +180,7 @@ public class Filter {
             detectionrate = spam / (double) mailcollection.length;
         }
         System.out.println( "AUSWERTUNG " + (is_ham? "HAM:":"SPAM:") +" Schwellenwert: "+ schwellenwert +
-                ", Alpha: "+ aussagekräftigAb + ", Als spam erkannt: " + detectionrate );
+                ", Alpha: "+ alpha + ", Als spam erkannt: " + detectionrate );
         return detectionrate;
     }
 }
